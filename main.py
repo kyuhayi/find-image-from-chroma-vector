@@ -46,24 +46,36 @@ ids = []
 
 for i, img_path in enumerate(tqdm(img_list)):
     img = Image.open(img_path)
-    cls = img_path.split("\\")[1]
+    cls = img_path.split("\\")[11]
 
     img_tensor = feature_extractor(images=img, return_tensors="pt").to("cuda")
     outputs = model(**img_tensor)
-    embedding = outputs.pooler_output.detach().cpu().numpy().squeeze()
+    embedding = outputs.pooler_output.detach().cpu().numpy().squeeze().tolist()
     embeddings.append(embedding)
+
     metadatas.append({
         "uri": img_path,
         "name": cls
     })
+
     ids.append(str(i))
 
 print("All images have been loaded into Chroma")
 
 
+collection.add(
+    embeddings=embeddings,
+    metadatas=metadatas,
+    ids=ids,
+)
+
+
+
+
 import requests
 
-test_img = Image.open(requests.get("https://i.ibb.co/7Ksr5mw/yNp6qTS.png", stream=True).raw).convert("RGB")
+url = "https://www.beyondkimchee.com/wp-content/uploads/2023/11/mandu-korean-dumplings-21.jpg"
+test_img = Image.open(requests.get(url, stream=True).raw).convert("RGB")
 
 
 test_img_tensor = feature_extractor(images=test_img, return_tensors="pt").to("cuda")
@@ -78,6 +90,7 @@ print(query_result)
 import matplotlib.pyplot as plt
 
 fig, axes = plt.subplots(1, 3, figsize=(16, 10))
+
 for i, metadata in enumerate(query_result["metadatas"][0]):
     distance = query_result["distances"][0][i]
 
@@ -86,4 +99,4 @@ for i, metadata in enumerate(query_result["metadatas"][0]):
     axes[i].axis("off")
 
 
-
+plt.show()

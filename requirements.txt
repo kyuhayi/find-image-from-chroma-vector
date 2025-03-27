@@ -1,0 +1,8 @@
+
+chromadb
+transformers
+kagglehub
+Pillow
+matplotlib
+
+
